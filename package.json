@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "description": "PP-Claw Desktop Application",
+  "author": {
+    "name": "DevYK",
+    "email": "devyk@ppclaw.com"
+  },
+  "homepage": "https://github.com/DevYK/pp-claw-ui",
   "main": "dist-electron/main/index.js",
   "scripts": {
     "dev": "vite",
