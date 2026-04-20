@@ -57,7 +57,9 @@ export function useChat(sessionId = "ui:direct") {
         .catch(() => {});
     }
 
-    const ws = new WSClient(sessionId);
+    const httpBase = apiClient.getBase();
+    const wsBase = httpBase.replace(/^http/, "ws");
+    const ws = new WSClient(sessionId, wsBase);
     wsRef.current = ws;
 
     const unsub = ws.onEvent((event: WSEvent) => {

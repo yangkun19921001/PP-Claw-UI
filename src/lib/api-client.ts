@@ -72,6 +72,10 @@ class APIClient {
     this.base = base;
   }
 
+  getBase(): string {
+    return this.base;
+  }
+
   private async request<T>(path: string, init?: RequestInit): Promise<T> {
     const res = await fetch(`${this.base}${path}`, {
       ...init,
