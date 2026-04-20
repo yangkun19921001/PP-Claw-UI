@@ -19,47 +19,40 @@ function nextId(prefix: string) {
   return `${prefix}-${Date.now()}-${++msgCounter}`;
 }
 
-export function useChat(sessionId = "ui:direct") {
+export function useChat(sessionKey: string, chatId?: string) {
+  const wsSessionId = chatId || sessionKey;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WSClient | null>(null);
-  const prevSessionRef = useRef<string>(sessionId);
-  const historyLoadedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    if (prevSessionRef.current !== sessionId) {
-      setMessages([]);
-      setIsLoading(false);
-      setError(null);
-      prevSessionRef.current = sessionId;
-    }
+    let stale = false;
+    setMessages([]);
+    setIsLoading(false);
+    setError(null);
 
-    if (!historyLoadedRef.current.has(sessionId)) {
-      historyLoadedRef.current.add(sessionId);
-      apiClient
-        .getSession(sessionId)
-        .then((detail) => {
-          if (detail?.messages?.length) {
-            const history: ChatMessage[] = detail.messages.map((m, i) => ({
-              id: `hist-${i}`,
-              role: (m.role === "user" ? "user" : "assistant") as "user" | "assistant",
-              content: m.content,
-              media: m.media,
-              timestamp: m.timestamp ? new Date(m.timestamp).getTime() : Date.now(),
-            }));
-            setMessages((prev) =>
-              prev.length === 0 ? history : prev,
-            );
-          }
-        })
-        .catch(() => {});
-    }
+    apiClient
+      .getSession(sessionKey)
+      .then((detail) => {
+        if (stale) return;
+        if (detail?.messages?.length) {
+          const history: ChatMessage[] = detail.messages.map((m, i) => ({
+            id: `hist-${i}`,
+            role: (m.role === "user" ? "user" : "assistant") as "user" | "assistant",
+            content: m.content,
+            media: m.media,
+            timestamp: m.timestamp ? new Date(m.timestamp).getTime() : Date.now(),
+          }));
+          setMessages(history);
+        }
+      })
+      .catch(() => {});
 
     const httpBase = apiClient.getBase();
     const wsBase = httpBase.replace(/^http/, "ws");
-    const ws = new WSClient(sessionId, wsBase);
+    const ws = new WSClient(wsSessionId, wsBase);
     wsRef.current = ws;
 
     const unsub = ws.onEvent((event: WSEvent) => {
@@ -170,11 +163,12 @@ export function useChat(sessionId = "ui:direct") {
     }, 1000);
 
     return () => {
+      stale = true;
       unsub();
       clearInterval(checkInterval);
       ws.disconnect();
     };
-  }, [sessionId]);
+  }, [sessionKey, wsSessionId]);
 
   const sendMessage = useCallback(
     (content: string, media?: string[]) => {
@@ -199,7 +193,6 @@ export function useChat(sessionId = "ui:direct") {
 
   const clearMessages = useCallback(() => {
     setMessages([]);
-    historyLoadedRef.current.delete(prevSessionRef.current);
   }, []);
 
   return { messages, sendMessage, clearMessages, isConnected, isLoading, error };

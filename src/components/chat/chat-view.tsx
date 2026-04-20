@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useChat } from "@/hooks/use-chat";
 import { MessageBubble } from "./message-bubble";
 import { ChatInput } from "./chat-input";
@@ -12,9 +14,52 @@ interface ChatViewProps {
 }
 
 export function ChatView({ sessionKey }: ChatViewProps) {
-  const sessionId = sessionKey || "ui:direct";
-  const { messages, sendMessage, clearMessages, isConnected, isLoading, error } =
-    useChat(sessionId);
+  const [generatedId] = useState(() => `ui:${Date.now()}`);
+  const isNewChat = !sessionKey;
+
+  // For new chats: sessionKey=generatedId, chatId=generatedId
+  // For existing sessions: sessionKey is full backend key (e.g. "make:ui:ui:123"),
+  //   chatId is extracted (e.g. "ui:123") for WS matching
+  let chatId: string | undefined;
+  if (sessionKey) {
+    const colonIdx = sessionKey.indexOf(":");
+    if (colonIdx >= 0) {
+      const rest = sessionKey.substring(colonIdx + 1);
+      const secondColon = rest.indexOf(":");
+      if (secondColon >= 0) {
+        chatId = rest.substring(secondColon + 1);
+      }
+    }
+  }
+  const sessionId = sessionKey || generatedId;
+
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const hasSentRef = useRef(false);
+  const { messages, sendMessage: rawSend, clearMessages, isConnected, isLoading, error } =
+    useChat(sessionId, chatId);
+
+  const sendMessage = useCallback(
+    (content: string, media?: string[]) => {
+      rawSend(content, media);
+      if (isNewChat && !hasSentRef.current) {
+        hasSentRef.current = true;
+        navigate(`/chat/${encodeURIComponent(sessionId)}`, { replace: true });
+      }
+    },
+    [rawSend, isNewChat, sessionId, navigate],
+  );
+
+  const prevMsgCountRef = useRef(0);
+  useEffect(() => {
+    if (messages.length > prevMsgCountRef.current) {
+      const latest = messages[messages.length - 1];
+      if (latest?.role === "assistant" && latest.type !== "progress") {
+        queryClient.invalidateQueries({ queryKey: ["sessions"] });
+      }
+    }
+    prevMsgCountRef.current = messages.length;
+  }, [messages, queryClient]);
   const { t } = useI18n();
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -28,7 +73,7 @@ export function ChatView({ sessionKey }: ChatViewProps) {
       <div className="flex items-center justify-between border-b border-border px-4 py-2.5 shrink-0">
         <div className="flex items-center gap-3">
           <h2 className="text-sm font-medium truncate max-w-[300px]">
-            {sessionId}
+            {isNewChat && messages.length === 0 ? t("chat.new") : sessionId}
           </h2>
           <Badge
             variant={isConnected ? "success" : "destructive"}
@@ -40,7 +85,7 @@ export function ChatView({ sessionKey }: ChatViewProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={clearMessages}
+          onClick={() => { clearMessages(); queryClient.invalidateQueries({ queryKey: ["sessions"] }); }}
           className="text-xs text-muted-foreground"
         >
           <Trash2 className="h-3.5 w-3.5 mr-1" />

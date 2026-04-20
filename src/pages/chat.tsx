@@ -63,18 +63,21 @@ export default function ChatPage() {
               <NavLink
                 key={s.key}
                 to={`/chat/${encodeURIComponent(s.key)}`}
-                className={({ isActive }) =>
-                  cn(
+                className={({ isActive }) => {
+                  const manualActive = isActive || (sessionKey && s.chat_id && sessionKey === s.chat_id);
+                  return cn(
                     "flex flex-col rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive
+                    manualActive
                       ? "bg-primary/10 text-primary"
                       : "text-text-secondary hover:bg-surface-2/50",
-                  )
-                }
+                  );
+                }}
               >
                 <div className="flex items-center gap-2">
                   <MessageSquare className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate flex-1">{s.key}</span>
+                  <span className="truncate flex-1 font-medium">
+                    {s.preview || s.key}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 mt-0.5 ml-5.5 text-[10px] text-muted-foreground">
                   {s.messages !== undefined && (

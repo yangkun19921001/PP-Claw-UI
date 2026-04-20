@@ -79,7 +79,9 @@ export interface CronJobState {
 
 export interface SessionInfo {
   key: string;
+  chat_id?: string;
   messages?: number;
+  preview?: string;
   updated_at?: string;
 }
 
