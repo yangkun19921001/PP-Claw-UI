@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Radio, AlertCircle, Loader2, ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n";
 
 interface SubAccount {
   account_id?: string;
@@ -65,6 +66,7 @@ function formatTime(ts?: string): string {
 export default function ChannelsPage() {
   const { data, isLoading, isError, error } = useChannelsStatus();
   const [expandedChannel, setExpandedChannel] = useState<string | null>(null);
+  const { t } = useI18n();
 
   if (isLoading) {
     return (
@@ -80,8 +82,9 @@ export default function ChannelsPage() {
         <div className="flex items-center gap-2 text-error">
           <AlertCircle className="h-5 w-5" />
           <p className="text-sm">
-            Failed to load channels:{" "}
-            {error instanceof Error ? error.message : "Unknown error"}
+            {t("channels.failed", {
+              error: error instanceof Error ? error.message : "Unknown error",
+            })}
           </p>
         </div>
       </div>
@@ -98,9 +101,9 @@ export default function ChannelsPage() {
     return (
       <div className="p-6 space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">Channels</h1>
+          <h1 className="text-2xl font-bold">{t("channels.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Channel status overview
+            {t("channels.subtitle")}
           </p>
         </div>
         <Card>
@@ -122,9 +125,9 @@ export default function ChannelsPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Channels</h1>
+        <h1 className="text-2xl font-bold">{t("channels.title")}</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Channel status overview
+          {t("channels.subtitle")}
         </p>
       </div>
 
@@ -132,7 +135,7 @@ export default function ChannelsPage() {
         <Card>
           <CardContent className="p-6">
             <p className="text-sm text-muted-foreground">
-              No channels configured. Add channels in the Configuration page.
+              {t("channels.none")}
             </p>
           </CardContent>
         </Card>
@@ -159,12 +162,12 @@ export default function ChannelsPage() {
                       {name.replace(/_/g, " ")}
                     </CardTitle>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {flatAccounts.length} account{flatAccounts.length !== 1 ? "s" : ""}
+                      {t("channels.accountCount", { count: flatAccounts.length })}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant={ch.enabled ? "success" : "outline"}>
-                      {ch.enabled ? "Enabled" : "Disabled"}
+                      {ch.enabled ? t("common.enabled") : t("common.disabled")}
                     </Badge>
                     {flatAccounts.length > 0 &&
                       (isExpanded ? (
@@ -201,12 +204,12 @@ export default function ChannelsPage() {
                             <div className="flex items-center gap-2 text-muted-foreground">
                               {entry.status.running !== undefined && (
                                 <span>
-                                  {entry.status.running ? "Running" : "Stopped"}
+                                  {entry.status.running ? t("channels.running") : t("channels.stopped")}
                                 </span>
                               )}
                               {entry.status.logged_in !== undefined && (
                                 <span>
-                                  {entry.status.logged_in ? "Logged in" : "Not logged in"}
+                                  {entry.status.logged_in ? t("channels.loggedIn") : t("channels.notLoggedIn")}
                                 </span>
                               )}
                             </div>
@@ -219,13 +222,17 @@ export default function ChannelsPage() {
                           )}
                           {(entry.status as SubAccount).last_seen_at && (
                             <div className="text-muted-foreground">
-                              Last seen: {formatTime((entry.status as SubAccount).last_seen_at)}
+                              {t("channels.lastSeen", {
+                                time: formatTime((entry.status as SubAccount).last_seen_at),
+                              })}
                             </div>
                           )}
                           {(entry.status as SubAccount).paused_until &&
                             !(entry.status as SubAccount).paused_until!.startsWith("0001") && (
                             <div className="text-warning">
-                              Paused until: {formatTime((entry.status as SubAccount).paused_until)}
+                              {t("channels.pausedUntil", {
+                                time: formatTime((entry.status as SubAccount).paused_until),
+                              })}
                             </div>
                           )}
                           {entry.status.last_error && (

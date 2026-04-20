@@ -5,27 +5,30 @@ import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { MessageSquare, Plus, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { languageToLocale, useI18n } from "@/lib/i18n";
 
-function formatTime(ts?: string) {
+function formatTime(ts: string | undefined, locale: string) {
   if (!ts) return "";
   const d = new Date(ts);
   if (isNaN(d.getTime())) return "";
   const now = new Date();
   if (d.toDateString() === now.toDateString()) {
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
   }
-  return d.toLocaleDateString([], { month: "short", day: "numeric" });
+  return d.toLocaleDateString(locale, { month: "short", day: "numeric" });
 }
 
 export default function ChatPage() {
   const { sessionKey } = useParams();
   const { data: sessions } = useSessions();
+  const { language, t } = useI18n();
+  const locale = languageToLocale(language);
 
   return (
     <div className="flex h-full">
       <div className="w-60 border-r border-border bg-surface-1 flex flex-col shrink-0">
         <div className="flex items-center justify-between p-3 border-b border-border">
-          <span className="text-sm font-medium">Sessions</span>
+          <span className="text-sm font-medium">{t("chat.sessions")}</span>
           <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
             <NavLink to="/chat">
               <Plus className="h-4 w-4" />
@@ -47,7 +50,7 @@ export default function ChatPage() {
             }
           >
             <Plus className="h-3.5 w-3.5" />
-            New Chat
+            {t("chat.new")}
           </NavLink>
 
           {[...(sessions || [])].sort((a, b) => {
@@ -55,7 +58,7 @@ export default function ChatPage() {
             const tb = b.updated_at ? new Date(b.updated_at).getTime() : 0;
             return tb - ta;
           }).map((s) => {
-            const time = formatTime(s.updated_at);
+            const time = formatTime(s.updated_at, locale);
             return (
               <NavLink
                 key={s.key}
@@ -75,7 +78,7 @@ export default function ChatPage() {
                 </div>
                 <div className="flex items-center gap-2 mt-0.5 ml-5.5 text-[10px] text-muted-foreground">
                   {s.messages !== undefined && (
-                    <span>{s.messages} msgs</span>
+                    <span>{t("chat.msgCount", { count: s.messages })}</span>
                   )}
                   {time && (
                     <>

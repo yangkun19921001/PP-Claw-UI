@@ -33,6 +33,7 @@ import {
   FolderOpen,
 } from "lucide-react";
 import type { SkillItem, SkillDetail, AgentSkillsResponse } from "@/lib/api-client";
+import { useI18n } from "@/lib/i18n";
 
 const SOURCE_LABELS: Record<string, { label: string; variant: "default" | "outline" | "success" | "destructive" }> = {
   workspace: { label: "Workspace", variant: "default" },
@@ -53,6 +54,7 @@ export default function SkillsPage() {
   const { data: agents } = useAgents();
   const saveSkill = useSaveSkill();
   const deleteSkill = useDeleteSkill();
+  const { t } = useI18n();
 
   const [selectedSkill, setSelectedSkill] = useState<{ agent: string; name: string } | null>(null);
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
@@ -135,7 +137,9 @@ export default function SkillsPage() {
         <div className="flex items-center gap-2 text-error">
           <AlertCircle className="h-5 w-5" />
           <p className="text-sm">
-            Failed to load skills: {error instanceof Error ? error.message : "Unknown error"}
+            {t("skills.failed", {
+              error: error instanceof Error ? error.message : "Unknown error",
+            })}
           </p>
         </div>
       </div>
@@ -150,24 +154,31 @@ export default function SkillsPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Skills</h1>
+          <h1 className="text-2xl font-bold">{t("skills.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {totalBuiltin + totalLearned} skills across {agentSkillsList.length} agents
+            {t("skills.subtitle", {
+              skills: totalBuiltin + totalLearned,
+              agents: agentSkillsList.length,
+            })}
             {totalBuiltin > 0 && (
               <span className="ml-2">
-                <Badge variant="outline" className="text-[10px] ml-1">{totalBuiltin} built-in</Badge>
+                <Badge variant="outline" className="text-[10px] ml-1">
+                  {t("skills.builtin", { count: totalBuiltin })}
+                </Badge>
               </span>
             )}
             {totalLearned > 0 && (
               <span className="ml-1">
-                <Badge variant="success" className="text-[10px]">{totalLearned} learned</Badge>
+                <Badge variant="success" className="text-[10px]">
+                  {t("skills.learned", { count: totalLearned })}
+                </Badge>
               </span>
             )}
           </p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          New Skill
+          {t("skills.new")}
         </Button>
       </div>
 
@@ -175,8 +186,7 @@ export default function SkillsPage() {
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-sm text-muted-foreground">
-              No skills found. Built-in skills appear when SKILL.md files are in the workspace or skills directory.
-              Learned skills are automatically extracted from conversations when learning is enabled.
+              {t("skills.none")}
             </p>
           </CardContent>
         </Card>

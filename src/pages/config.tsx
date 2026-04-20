@@ -12,11 +12,13 @@ import { RLConfigEditor } from "@/components/config/rl-config";
 import { toast } from "sonner";
 import { Save, Loader2 } from "lucide-react";
 import type { PPClawConfig } from "@/types/api";
+import { useI18n } from "@/lib/i18n";
 
 export default function ConfigPage() {
   const { data: config, isLoading, isError } = useConfig();
   const updateConfig = useUpdateConfig();
   const [draft, setDraft] = useState<PPClawConfig | null>(null);
+  const { t } = useI18n();
 
   const current = draft || config;
 
@@ -31,7 +33,7 @@ export default function ConfigPage() {
   if (isError || !current) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-error">Failed to load configuration</p>
+        <p className="text-error">{t("config.failed")}</p>
       </div>
     );
   }
@@ -41,7 +43,7 @@ export default function ConfigPage() {
     try {
       await updateConfig.mutateAsync(draft);
       setDraft(null);
-      toast.success("Configuration saved");
+      toast.success(t("config.saved"));
     } catch (err: unknown) {
       toast.error(`Save failed: ${err instanceof Error ? err.message : "Unknown error"}`);
     }
@@ -57,8 +59,8 @@ export default function ConfigPage() {
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-border px-6 py-4">
         <div>
-          <h1 className="text-xl font-bold">Configuration</h1>
-          <p className="text-sm text-muted-foreground">Manage all PP-Claw settings</p>
+          <h1 className="text-xl font-bold">{t("config.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("config.subtitle")}</p>
         </div>
         {isDirty && (
           <Button onClick={handleSave} disabled={updateConfig.isPending}>
@@ -67,7 +69,7 @@ export default function ConfigPage() {
             ) : (
               <Save className="h-4 w-4 mr-2" />
             )}
-            Save Changes
+            {t("config.saveChanges")}
           </Button>
         )}
       </div>
@@ -75,13 +77,13 @@ export default function ConfigPage() {
       <div className="flex-1 overflow-auto p-6">
         <Tabs defaultValue="agents">
           <TabsList className="mb-4">
-            <TabsTrigger value="agents">Agents</TabsTrigger>
-            <TabsTrigger value="providers">Providers</TabsTrigger>
-            <TabsTrigger value="channels">Channels</TabsTrigger>
-            <TabsTrigger value="gateway">Gateway</TabsTrigger>
-            <TabsTrigger value="tools">Tools</TabsTrigger>
-            <TabsTrigger value="learning">Learning</TabsTrigger>
-            <TabsTrigger value="rl">RL</TabsTrigger>
+            <TabsTrigger value="agents">{t("config.tab.agents")}</TabsTrigger>
+            <TabsTrigger value="providers">{t("config.tab.providers")}</TabsTrigger>
+            <TabsTrigger value="channels">{t("config.tab.channels")}</TabsTrigger>
+            <TabsTrigger value="gateway">{t("config.tab.gateway")}</TabsTrigger>
+            <TabsTrigger value="tools">{t("config.tab.tools")}</TabsTrigger>
+            <TabsTrigger value="learning">{t("config.tab.learning")}</TabsTrigger>
+            <TabsTrigger value="rl">{t("config.tab.rl")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="agents">

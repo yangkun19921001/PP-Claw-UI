@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import apiClient from "@/lib/api-client";
 import type { CronJob } from "@/types/api";
+import { useI18n } from "@/lib/i18n";
 
 function formatMs(ms: number): string {
   if (!ms || ms <= 0) return "—";
@@ -224,6 +225,7 @@ export default function CronPage() {
     to: "",
     deleteAfterRun: false,
   });
+  const { t } = useI18n();
 
   const channelGroups = useMemo(() => {
     if (!jobs) return { channels: [] as string[], grouped: {} as Record<string, CronJob[]> };
@@ -319,8 +321,9 @@ export default function CronPage() {
         <div className="flex items-center gap-2 text-error">
           <AlertCircle className="h-5 w-5" />
           <p className="text-sm">
-            Failed to load cron jobs:{" "}
-            {error instanceof Error ? error.message : "Unknown error"}
+            {t("cron.failed", {
+              error: error instanceof Error ? error.message : "Unknown error",
+            })}
           </p>
         </div>
       </div>
@@ -332,7 +335,7 @@ export default function CronPage() {
       return (
         <Card>
           <CardContent className="p-6 text-center">
-            <p className="text-sm text-muted-foreground">No cron jobs in this group</p>
+            <p className="text-sm text-muted-foreground">{t("cron.noneGroup")}</p>
           </CardContent>
         </Card>
       );
@@ -358,21 +361,21 @@ export default function CronPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Cron Jobs</h1>
+          <h1 className="text-2xl font-bold">{t("cron.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {jobs?.length || 0} scheduled tasks
+            {t("cron.subtitle", { count: jobs?.length || 0 })}
           </p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          New Job
+          {t("cron.new")}
         </Button>
       </div>
 
       {!jobs || jobs.length === 0 ? (
         <Card>
           <CardContent className="p-6 text-center">
-            <p className="text-sm text-muted-foreground">No cron jobs configured</p>
+            <p className="text-sm text-muted-foreground">{t("cron.none")}</p>
           </CardContent>
         </Card>
       ) : channelGroups.channels.length <= 1 ? (
@@ -380,9 +383,7 @@ export default function CronPage() {
       ) : (
         <Tabs defaultValue="all">
           <TabsList>
-            <TabsTrigger value="all">
-              All ({jobs.length})
-            </TabsTrigger>
+            <TabsTrigger value="all">{t("cron.all", { count: jobs.length })}</TabsTrigger>
             {channelGroups.channels.map((ch) => (
               <TabsTrigger key={ch} value={ch} className="capitalize">
                 {ch.replace(/_/g, " ")} ({channelGroups.grouped[ch].length})
@@ -403,7 +404,7 @@ export default function CronPage() {
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create Cron Job</DialogTitle>
+            <DialogTitle>{t("cron.create")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
             <div>

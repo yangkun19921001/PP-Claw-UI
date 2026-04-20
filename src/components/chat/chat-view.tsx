@@ -5,6 +5,7 @@ import { ChatInput } from "./chat-input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, MessageSquare, Trash2, AlertCircle } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 interface ChatViewProps {
   sessionKey?: string;
@@ -14,6 +15,7 @@ export function ChatView({ sessionKey }: ChatViewProps) {
   const sessionId = sessionKey || "ui:direct";
   const { messages, sendMessage, clearMessages, isConnected, isLoading, error } =
     useChat(sessionId);
+  const { t } = useI18n();
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -32,7 +34,7 @@ export function ChatView({ sessionKey }: ChatViewProps) {
             variant={isConnected ? "success" : "destructive"}
             className="text-[10px]"
           >
-            {isConnected ? "Connected" : "Disconnected"}
+            {isConnected ? t("common.connected") : t("common.disconnected")}
           </Badge>
         </div>
         <Button
@@ -42,14 +44,14 @@ export function ChatView({ sessionKey }: ChatViewProps) {
           className="text-xs text-muted-foreground"
         >
           <Trash2 className="h-3.5 w-3.5 mr-1" />
-          Clear
+          {t("common.clear")}
         </Button>
       </div>
 
       {error && !isConnected && (
         <div className="flex items-center gap-2 px-4 py-2 bg-error/5 border-b border-error/20 text-error text-xs">
           <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-          <span>{error}</span>
+          <span>{error === "Disconnected from server" ? t("chat.disconnectedFromServer") : error}</span>
         </div>
       )}
 
@@ -58,7 +60,7 @@ export function ChatView({ sessionKey }: ChatViewProps) {
           {messages.length === 0 && !isLoading && (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
               <MessageSquare className="h-10 w-10 mb-3 opacity-30" />
-              <p className="text-sm">Send a message to start chatting</p>
+              <p className="text-sm">{t("chat.empty")}</p>
             </div>
           )}
 

@@ -13,24 +13,27 @@ import {
 } from "lucide-react";
 import { ConnectionStatus } from "./connection-status";
 import { Separator } from "@/components/ui/separator";
+import { useI18n } from "@/lib/i18n";
 
 const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/chat", label: "Chat", icon: MessageSquare },
-  { to: "/config", label: "Config", icon: Settings2 },
-  { to: "/agents", label: "Agents", icon: Bot },
-  { to: "/tools", label: "Tools", icon: Wrench },
-  { to: "/channels", label: "Channels", icon: Radio },
-  { to: "/cron", label: "Cron Jobs", icon: Clock },
-  { to: "/skills", label: "Skills", icon: BookOpen },
-  { to: "/settings", label: "Settings", icon: Settings },
-];
+  { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { to: "/chat", labelKey: "nav.chat", icon: MessageSquare },
+  { to: "/config", labelKey: "nav.config", icon: Settings2 },
+  { to: "/agents", labelKey: "nav.agents", icon: Bot },
+  { to: "/tools", labelKey: "nav.tools", icon: Wrench },
+  { to: "/channels", labelKey: "nav.channels", icon: Radio },
+  { to: "/cron", labelKey: "nav.cron", icon: Clock },
+  { to: "/skills", labelKey: "nav.skills", icon: BookOpen },
+  { to: "/settings", labelKey: "nav.settings", icon: Settings },
+] as const;
 
 export function Sidebar() {
+  const { t } = useI18n();
+
   return (
     <aside className="flex h-full w-56 flex-col border-r border-sidebar-border bg-sidebar">
       <div className="drag-region flex h-14 items-center pl-20 pr-4">
-        <span className="no-drag text-base font-bold text-brand">PP-Claw</span>
+        <span className="no-drag text-base font-bold text-brand">{t("brand.name")}</span>
       </div>
 
       <Separator />
@@ -50,7 +53,7 @@ export function Sidebar() {
             }
           >
             <item.icon className="h-4 w-4" />
-            {item.label}
+            {t(item.labelKey)}
           </NavLink>
         ))}
       </nav>

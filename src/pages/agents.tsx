@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Bot, RefreshCw } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export default function AgentsPage() {
   const { data: agents, isLoading } = useAgents();
@@ -21,6 +22,7 @@ export default function AgentsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [modelInput, setModelInput] = useState("");
   const [showSwitch, setShowSwitch] = useState(false);
+  const { t } = useI18n();
 
   const { data: detail } = useAgent(selectedId || "");
 
@@ -28,23 +30,23 @@ export default function AgentsPage() {
     if (!selectedId || !modelInput.trim()) return;
     try {
       await switchModel.mutateAsync({ agentId: selectedId, model: modelInput.trim() });
-      toast.success(`Model switched to ${modelInput}`);
+      toast.success(t("agents.modelSwitched", { model: modelInput }));
       setShowSwitch(false);
       setModelInput("");
     } catch (err: unknown) {
-      toast.error(`Failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+      toast.error(t("agents.failed", { error: err instanceof Error ? err.message : "Unknown error" }));
     }
   };
 
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Agents</h1>
-        <p className="text-sm text-muted-foreground mt-1">View and manage agents</p>
+        <h1 className="text-2xl font-bold">{t("agents.title")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("agents.subtitle")}</p>
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground">Loading...</p>
+        <p className="text-muted-foreground">{t("common.loading")}</p>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {agents?.map((agent) => (
@@ -61,13 +63,13 @@ export default function AgentsPage() {
                   <CardTitle className="text-sm">{agent.name || agent.id}</CardTitle>
                   <p className="text-xs text-muted-foreground">{agent.id}</p>
                 </div>
-                {agent.default && <Badge variant="secondary">Default</Badge>}
+                {agent.default && <Badge variant="secondary">{t("common.default")}</Badge>}
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground truncate">{agent.model}</span>
                   <Badge variant={agent.loaded ? "success" : "outline"}>
-                    {agent.loaded ? "Active" : "Idle"}
+                    {agent.loaded ? t("common.active") : t("common.idle")}
                   </Badge>
                 </div>
                 <Button
@@ -82,7 +84,7 @@ export default function AgentsPage() {
                   }}
                 >
                   <RefreshCw className="h-3.5 w-3.5 mr-1" />
-                  Switch Model
+                  {t("agents.switchModel")}
                 </Button>
               </CardContent>
             </Card>
@@ -93,7 +95,7 @@ export default function AgentsPage() {
       {detail && selectedId && !showSwitch && (
         <Card>
           <CardHeader>
-            <CardTitle>Agent Detail: {selectedId}</CardTitle>
+            <CardTitle>{t("agents.detail", { id: selectedId })}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -111,10 +113,10 @@ export default function AgentsPage() {
       <Dialog open={showSwitch} onOpenChange={setShowSwitch}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Switch Model — {selectedId}</DialogTitle>
+            <DialogTitle>{t("agents.switchDialog", { id: selectedId || "" })}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <Label>New Model</Label>
+            <Label>{t("agents.newModel")}</Label>
             <Input
               value={modelInput}
               onChange={(e) => setModelInput(e.target.value)}
@@ -122,9 +124,9 @@ export default function AgentsPage() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowSwitch(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowSwitch(false)}>{t("common.cancel")}</Button>
             <Button onClick={handleSwitch} disabled={switchModel.isPending}>
-              Switch
+              {t("agents.switchModel")}
             </Button>
           </DialogFooter>
         </DialogContent>

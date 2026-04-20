@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Wrench, Search } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export default function ToolsPage() {
   const { data: tools, isLoading } = useTools();
   const [search, setSearch] = useState("");
+  const { t } = useI18n();
 
   const filtered = tools?.filter(
     (t) =>
@@ -19,9 +21,9 @@ export default function ToolsPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Tools</h1>
+          <h1 className="text-2xl font-bold">{t("tools.title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {tools?.length || 0} tools registered
+            {t("tools.subtitle", { count: tools?.length || 0 })}
           </p>
         </div>
         <div className="relative w-64">
@@ -29,14 +31,14 @@ export default function ToolsPage() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search tools..."
+            placeholder={t("tools.search")}
             className="pl-9"
           />
         </div>
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground">Loading...</p>
+        <p className="text-muted-foreground">{t("common.loading")}</p>
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {filtered?.map((tool) => (
@@ -49,7 +51,7 @@ export default function ToolsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-xs text-muted-foreground line-clamp-3">
-                  {tool.description || "No description"}
+                  {tool.description || t("tools.noDescription")}
                 </p>
                 {tool.parameters && (
                   <div className="mt-2 flex flex-wrap gap-1">

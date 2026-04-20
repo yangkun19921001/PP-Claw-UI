@@ -5,6 +5,7 @@ import { HashRouter } from "react-router-dom";
 import { Toaster } from "sonner";
 import App from "./app";
 import "./index.css";
+import { I18nProvider } from "@/lib/i18n";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,11 +18,13 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <HashRouter>
-        <App />
-        <Toaster position="top-right" richColors />
-      </HashRouter>
-    </QueryClientProvider>
+    <I18nProvider>
+      <QueryClientProvider client={queryClient}>
+        <HashRouter>
+          <App />
+          <Toaster position="top-right" richColors />
+        </HashRouter>
+      </QueryClientProvider>
+    </I18nProvider>
   </StrictMode>,
 );

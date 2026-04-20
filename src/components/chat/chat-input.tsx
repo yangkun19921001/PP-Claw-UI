@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Paperclip, Send, Image as ImageIcon, Loader2, FileText } from "lucide-react";
 import { toast } from "sonner";
 import apiClient from "@/lib/api-client";
+import { useI18n } from "@/lib/i18n";
 
 const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".ico"]);
 function isImageFile(url: string): boolean {
@@ -17,6 +18,7 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ onSend, disabled, reconnecting }: ChatInputProps) {
+  const { t } = useI18n();
   const [text, setText] = useState("");
   const [uploading, setUploading] = useState(false);
   const [pendingMedia, setPendingMedia] = useState<string[]>([]);
@@ -59,12 +61,12 @@ export function ChatInput({ onSend, disabled, reconnecting }: ChatInputProps) {
       const result = await apiClient.uploadFiles(Array.from(files));
       if (result.files.length > 0) {
         setPendingMedia((prev) => [...prev, ...result.files]);
-        toast.success(`Uploaded ${result.count} file(s)`);
+        toast.success(t("chat.uploaded", { count: result.count }));
       }
     } catch (err) {
-      toast.error(
-        `Upload failed: ${err instanceof Error ? err.message : "Unknown error"}`,
-      );
+      toast.error(t("chat.uploadFailed", {
+        error: err instanceof Error ? err.message : "Unknown error",
+      }));
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -76,7 +78,7 @@ export function ChatInput({ onSend, disabled, reconnecting }: ChatInputProps) {
       {reconnecting && (
         <div className="mb-2 flex items-center gap-2 text-xs text-warning">
           <Loader2 className="h-3 w-3 animate-spin" />
-          <span>Reconnecting... messages will be sent automatically</span>
+          <span>{t("chat.reconnecting")}</span>
         </div>
       )}
       {pendingMedia.length > 0 && (
@@ -106,7 +108,7 @@ export function ChatInput({ onSend, disabled, reconnecting }: ChatInputProps) {
                   setPendingMedia((prev) => prev.filter((_, idx) => idx !== i))
                 }
               >
-                Remove
+                {t("chat.remove")}
               </button>
             </div>
           ))}
@@ -133,7 +135,7 @@ export function ChatInput({ onSend, disabled, reconnecting }: ChatInputProps) {
               }
             }}
             disabled={uploading}
-            title="Attach file"
+            title={t("chat.attachFile")}
           >
             {uploading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -152,7 +154,7 @@ export function ChatInput({ onSend, disabled, reconnecting }: ChatInputProps) {
               }
             }}
             disabled={uploading}
-            title="Send image"
+            title={t("chat.sendImage")}
           >
             <ImageIcon className="h-4 w-4" />
           </Button>
@@ -163,7 +165,7 @@ export function ChatInput({ onSend, disabled, reconnecting }: ChatInputProps) {
           value={text}
           onChange={handleTextChange}
           onKeyDown={handleKeyDown}
-          placeholder={disabled ? "Processing, you can type ahead..." : "Type a message..."}
+          placeholder={disabled ? t("chat.processingPlaceholder") : t("chat.typePlaceholder")}
           rows={1}
           className="flex-1 resize-none rounded-lg border border-input bg-surface-1 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 max-h-40"
         />
@@ -173,7 +175,7 @@ export function ChatInput({ onSend, disabled, reconnecting }: ChatInputProps) {
           disabled={!canSend}
           size="icon"
           className="h-9 w-9"
-          title={disabled ? "Waiting for response..." : "Send"}
+          title={disabled ? t("chat.waitingResponse") : t("chat.send")}
         >
           {disabled ? (
             <Loader2 className="h-4 w-4 animate-spin" />

@@ -5,17 +5,19 @@ import { useTools } from "@/hooks/use-tools";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Activity, Bot, Clock, Wrench, Zap } from "lucide-react";
+import { translateMode, useI18n } from "@/lib/i18n";
 
 export default function DashboardPage() {
   const { data: status, isLoading, isError } = useSystemStatus();
   const { data: agents } = useAgents();
   const { data: cronJobs } = useCronJobs();
   const { data: tools } = useTools();
+  const { language, t } = useI18n();
 
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="text-muted-foreground">Connecting to PP-Claw...</div>
+        <div className="text-muted-foreground">{t("dashboard.loading")}</div>
       </div>
     );
   }
@@ -24,9 +26,9 @@ export default function DashboardPage() {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
-          <p className="text-lg font-medium text-error">Connection Failed</p>
+          <p className="text-lg font-medium text-error">{t("dashboard.failed")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Make sure PP-Claw is running on port 18790
+            {t("dashboard.ensureRunning")}
           </p>
         </div>
       </div>
@@ -36,34 +38,34 @@ export default function DashboardPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          PP-Claw system overview
+          {t("dashboard.subtitle")}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Status</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.status")}</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Badge variant="success">Online</Badge>
+              <Badge variant="success">{t("common.online")}</Badge>
               <span className="text-xs text-muted-foreground">
-                {status?.mode} mode
+                {translateMode(language, status?.mode)}
               </span>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              Uptime: {Math.floor((status?.uptime_s || 0) / 60)}m
+              {t("dashboard.uptime", { minutes: Math.floor((status?.uptime_s || 0) / 60) })}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Model</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.model")}</CardTitle>
             <Zap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -76,25 +78,25 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Agents</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.agents")}</CardTitle>
             <Bot className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{agents?.length || 0}</p>
             <p className="text-xs text-muted-foreground">
-              {agents?.filter((a) => a.loaded).length || 0} loaded
+              {t("dashboard.loaded", { count: agents?.filter((a) => a.loaded).length || 0 })}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tools</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.tools")}</CardTitle>
             <Wrench className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{tools?.length || 0}</p>
-            <p className="text-xs text-muted-foreground">registered</p>
+            <p className="text-xs text-muted-foreground">{t("dashboard.registered")}</p>
           </CardContent>
         </Card>
       </div>
@@ -104,7 +106,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bot className="h-4 w-4" />
-              Agents
+              {t("dashboard.agents")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -120,16 +122,16 @@ export default function DashboardPage() {
                       <p className="text-xs text-muted-foreground">{agent.model}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      {agent.default && <Badge variant="secondary">Default</Badge>}
+                      {agent.default && <Badge variant="secondary">{t("common.default")}</Badge>}
                       <Badge variant={agent.loaded ? "success" : "outline"}>
-                        {agent.loaded ? "Loaded" : "Idle"}
+                        {agent.loaded ? t("common.loaded") : t("common.idle")}
                       </Badge>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No agents configured</p>
+              <p className="text-sm text-muted-foreground">{t("dashboard.noAgents")}</p>
             )}
           </CardContent>
         </Card>
@@ -138,7 +140,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
-              Cron Jobs
+              {t("dashboard.cronJobs")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -156,13 +158,13 @@ export default function DashboardPage() {
                       </p>
                     </div>
                     <Badge variant={job.enabled ? "success" : "outline"}>
-                      {job.enabled ? "Active" : "Disabled"}
+                      {job.enabled ? t("common.active") : t("common.disabled")}
                     </Badge>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No cron jobs</p>
+              <p className="text-sm text-muted-foreground">{t("dashboard.noCron")}</p>
             )}
           </CardContent>
         </Card>
